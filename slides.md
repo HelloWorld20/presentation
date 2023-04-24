@@ -27,7 +27,7 @@ css: unocss
 
 # 关于 React 中的函数式编程
 
-代数效应？、消除副作用？、useSWR？...
+消除副作用？、useSWR？、useRequest？...
 
 <!--
 The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
@@ -502,26 +502,45 @@ image: https://source.unsplash.com/collection/94734566/1920x1080
 
 ---
 
-# 函数式编程的好处
+# useSWR好，但也不是万能的
 
-一个词
+1. 普通的post，意义不大
 
+2. 灵活度不高，可以用ahooks的useRequest，一个不错的useSWR平替
 
-<div class="text-4xl text-center mt-43 text-red-500">
+3. 有一些bug
 
-稳定
+---
 
-</div>
+# ahooks的useRequst，一个半自动的useSWR
+
+[https://ahooks.js.org/zh-CN/hooks/use-request/index](https://ahooks.js.org/zh-CN/hooks/use-request/index)
+
+useRequest 是一个强大的异步数据管理的 Hooks，React 项目中的网络请求场景使用 useRequest 就够了。
+
+useRequest 通过插件式组织代码，核心代码极其简单，并且可以很方便的扩展出更高级的功能。目前已有能力包括：
+
+* 自动请求/手动请求
+* 轮询
+* 防抖
+* 节流
+* 屏幕聚焦重新请求
+* 错误重试
+* loading delay
+* SWR(stale-while-revalidate)
+* 缓存
+
 
 ---
 layout: image-left
 image: https://source.unsplash.com/collection/94734566/1920x1080
 ---
 
-# 总结
+# React函数式组件的原则
 
-1. React中的函数式编程，就是一个提取副作用的过程
-2. 业务代码中不要出现副作用、遇到副作用应该提取成自定义hooks
+1. React中的函数式编程，就是一个提取副作用的过程。尽可能的不要在业务代码中使用useEffect，减少业务代码里面的副作用，如果有，最好提出去，封装成自定义hooks，保证业务代码的纯函数特性
+2. 尽可能的少用props传递数据，而是利用hooks热插拔的特性注入数据
+3. 尽可能的少定义内部状态，最好是一个状态定义整个组件的表现。多个状态容易出现冲突的问题。
 
 ---
 layout: image-left
