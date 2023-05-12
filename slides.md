@@ -34,7 +34,9 @@ The last comment block of each slide will be treated as slide notes. It will be 
 -->
 
 ---
+
 ## transition: fade-out
+
 ---
 
 # 问题？
@@ -74,8 +76,10 @@ h1 {
 </style>
 
 ---
+
 layout: image-right
 image: https://source.unsplash.com/collection/94734566/1920x1080
+
 ---
 
 # 函数式编程的核心思想
@@ -100,7 +104,6 @@ function App(props) {
 
 </div>
 
-
 <div v-click="3">
 
 $f(props + state) = vdom$
@@ -123,8 +126,10 @@ function App(props) {
 </div>
 
 ---
+
 layout: image-right
 image: https://source.unsplash.com/collection/94734566/1920x1080
+
 ---
 
 # 函数式编程的核心思想
@@ -195,14 +200,17 @@ function App(props) {
 import { useSyncExternalStore } from "react";
 
 export default function ChatIndicator() {
+  // 订阅网络状态，该hooks接收两个方法，subscribe与getSnapshot，返回网络状态，并且在isOnline变化时，触发React应用更新
   const isOnline = useSyncExternalStore(subscribe, getSnapshot);
+
+  // 业务代码只管拿到isOnline做视图渲染。不需要考虑任何的副作用
   return <h1>{isOnline ? "✅ Online" : "❌ Disconnected"}</h1>;
 }
-
+// getSnapshot方法只需要返回当前的状态，此处需要返回当前的网络状态
 function getSnapshot() {
   return navigator.onLine;
 }
-
+// subscribe方法用于订阅状态变化的时机。当时机变化后调用callback，getSnapshot方法就会执行，返回最新的状态。此处需要订阅网络变化的时机：online、offline
 function subscribe(callback) {
   window.addEventListener("online", callback);
   window.addEventListener("offline", callback);
@@ -232,7 +240,9 @@ function subscribe(callback) {
 </style>
 
 ---
+
 ## class: px-20
+
 ---
 
 # useSyncExternalStore 改造 useLocalStorage
@@ -332,7 +342,7 @@ function fetcher(path: string) {
 }
 
 function App() {
-  const { data, error, isLoading } = useSWR(fetcher, '/url');
+  const { data, error, isLoading } = useSWR("/url", fetcher);
   return <div>{data}</div>;
 }
 ```
@@ -341,15 +351,15 @@ function App() {
 
 ---
 
-# useSWR不仅仅是一个接口请求库
+# useSWR 不仅仅是一个接口请求库
 
-我们可以用useSWR来解决这些日常头疼的问题：
+我们可以用 useSWR 来解决这些日常头疼的问题：
 
 1. 封装请求
 
 传统形式
-```jsx
 
+```jsx
 function App() {
   const [data, setData] = useState();
   const [loading, setLoading] = useState();
@@ -358,31 +368,32 @@ function App() {
   useEffect(() => {
     if (loading) return;
     setLoading(true);
-    fetcher().then(res => {
-      setData(res);
-    }).catch(err => {
-      setErr(err);
-    }).finally(() => {
-      setLoading(false);
-    })
-  }, [])
+    fetcher()
+      .then((res) => {
+        setData(res);
+      })
+      .catch((err) => {
+        setErr(err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 }
-
 ```
 
 ---
 
-# useSWR不仅仅是一个接口请求库
+# useSWR 不仅仅是一个接口请求库
 
-我们可以用useSWR来解决这些日常头疼的问题：
+我们可以用 useSWR 来解决这些日常头疼的问题：
 
-有了useSWR，只需一行
+有了 useSWR，只需一行
+
 ```jsx
-
 function App() {
-  const { data, isLoading, error } = useSWR('key', fetcher);
+  const { data, isLoading, error } = useSWR("key", fetcher);
 }
-
 ```
 
 对于分页的操作：
@@ -397,13 +408,11 @@ const { data, error, isLoading, isValidating, mutate, size, setSize } = useSWRIn
 
 ---
 
-# useSWR不仅仅是一个接口请求库
+# useSWR 不仅仅是一个接口请求库
 
-我们可以用useSWR来解决这些日常头疼的问题：
+我们可以用 useSWR 来解决这些日常头疼的问题：
 
 2. 缓存！
-
-
 
 ```mermaid {theme: 'neutral', scale: 0.8}
 graph TD
@@ -419,37 +428,35 @@ I --> J[node]
 J --> K[node AJAX]
 ```
 
-这种情况下怎么写？useSWR随便写，自动我们处理好了所有事情
+这种情况下怎么写？useSWR 随便写，自动我们处理好了所有事情
 
 ---
 
-# SWR的概念
+# SWR 的概念
 
 <p class="nx-mt-6 nx-leading-7 first:nx-mt-0">“SWR” 这个名字来自于 <code class="nx-border-black nx-border-opacity-[0.04] nx-bg-opacity-[0.03] nx-bg-black nx-break-words nx-rounded-md nx-border nx-py-0.5 nx-px-[.25em] nx-text-[.9em] dark:nx-border-white/10 dark:nx-bg-white/10  " dir="ltr">stale-while-revalidate</code>：一种由 <a href="https://tools.ietf.org/html/rfc5861" target="_blank" rel="noreferrer" class="nx-text-primary-600 nx-underline nx-decoration-from-font [text-underline-position:from-font]">HTTP RFC 5861<span class="nx-sr-only"> </span></a> 推广的 HTTP 缓存失效策略。这种策略首先从缓存中返回数据（过期的），同时发送 fetch 请求（重新验证），最后得到最新数据。</p>
 
-
 ```jsx
 // key可以是字符串
-useSWR('/api/user', url => fetcher(url))
+useSWR("/api/user", (url) => fetcher(url));
 
 // 可以传递数组的方式传递多个参数
-useSWR(['/api/user', token], ([url, token]) => fetchWithToken(url, token))
+useSWR(["/api/user", token], ([url, token]) => fetchWithToken(url, token));
 
 // 传递null的方式阻止请求接口
-useSWR(user ? ['/api/orders', user] : null, fetchWithUser)
+useSWR(user ? ["/api/orders", user] : null, fetchWithUser);
 
 // 也可以传递对象
-useSWR({ url: '/api/orders', args: user }, fetcher)
-
+useSWR({ url: "/api/orders", args: user }, fetcher);
 ```
 
-只要key发生变化，就当做是请求新的数据，那么会是一份新的数据（缓存）
+只要 key 发生变化，就当做是请求新的数据，那么会是一份新的数据（缓存）
 
-换个角度说，只要应用中任何地方的useSWR key相同，那么将能拿到一样的数据（缓存）
+换个角度说，只要应用中任何地方的 useSWR key 相同，那么将能拿到一样的数据（缓存）
 
 ---
 
-# SWR的概念
+# SWR 的概念
 
 ```jsx {all|4,7,16,17,22}
 const cached = useSyncExternalStore(
@@ -458,41 +465,42 @@ const cached = useSyncExternalStore(
       subscribeCache(
         key,
         (current: State<Data, any>, prev: State<Data, any>) => {
-          if (!isEqual(prev, current)) callback()
+          if (!isEqual(prev, current)) callback();
         }
       ),
     [cache, key]
   ),
   getSnapshot[0],
   getSnapshot[1]
-)
+);
 
 const getSnapshot = useMemo(() => {
   const shouldStartRequest = (() => {
     ///
-  })()
-    const snapshot = mergeObjects(state)
-    if (!shouldStartRequest) {
-      return snapshot
-    }
-})
-
+  })();
+  const snapshot = mergeObjects(state);
+  if (!shouldStartRequest) {
+    return snapshot;
+  }
+});
 ```
 
 ---
+
 layout: image-right
 image: https://source.unsplash.com/collection/94734566/1920x1080
+
 ---
 
-# useSWR还有很多不可思议的功能
+# useSWR 还有很多不可思议的功能
 
 <br>
 <br>
 
-* [自动重新请求](https://swr.bootcss.com/docs/revalidation)：自动重新请求，窗口获得焦点、网络重新连接时重新请求，可以使得应用及时获得最新数据。及时更新状态。
-* [自动错误重试](https://swr.bootcss.com/docs/error-handling#%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95)：自动错误重试，不用处理错误
-* [乐观更新](https://swr.bootcss.com/docs/mutation#%E4%B9%90%E8%A7%82%E6%9B%B4%E6%96%B0)：可以在发起更新请求时，乐观的直接更新本地数据。减少等待时间。
-* [条件请求](https://swr.bootcss.com/docs/conditional-fetching)：可以很智能的链式依赖的条件请求数据，捕获promise错误
+- [自动重新请求](https://swr.bootcss.com/docs/revalidation)：自动重新请求，窗口获得焦点、网络重新连接时重新请求，可以使得应用及时获得最新数据。及时更新状态。
+- [自动错误重试](https://swr.bootcss.com/docs/error-handling#%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95)：自动错误重试，不用处理错误
+- [乐观更新](https://swr.bootcss.com/docs/mutation#%E4%B9%90%E8%A7%82%E6%9B%B4%E6%96%B0)：可以在发起更新请求时，乐观的直接更新本地数据。减少等待时间。
+- [条件请求](https://swr.bootcss.com/docs/conditional-fetching)：可以很智能的链式依赖的条件请求数据，捕获 promise 错误
 
 <v-click>
 
@@ -502,17 +510,17 @@ image: https://source.unsplash.com/collection/94734566/1920x1080
 
 ---
 
-# useSWR好，但也不是万能的
+# useSWR 好，但也不是万能的
 
-1. 普通的post，意义不大
+1. 普通的 post，意义不大
 
-2. 灵活度不高，可以用ahooks的useRequest，一个不错的useSWR平替
+2. 灵活度不高，可以用 ahooks 的 useRequest，一个不错的 useSWR 平替
 
-3. 有一些bug
+3. 有一些 bug
 
 ---
 
-# ahooks的useRequst，一个半自动的useSWR
+# ahooks 的 useRequst，一个半自动的 useSWR
 
 [https://ahooks.js.org/zh-CN/hooks/use-request/index](https://ahooks.js.org/zh-CN/hooks/use-request/index)
 
@@ -520,47 +528,50 @@ useRequest 是一个强大的异步数据管理的 Hooks，React 项目中的网
 
 useRequest 通过插件式组织代码，核心代码极其简单，并且可以很方便的扩展出更高级的功能。目前已有能力包括：
 
-* 自动请求/手动请求
-* 轮询
-* 防抖
-* 节流
-* 屏幕聚焦重新请求
-* 错误重试
-* loading delay
-* SWR(stale-while-revalidate)
-* 缓存
-
+- 自动请求/手动请求
+- 轮询
+- 防抖
+- 节流
+- 屏幕聚焦重新请求
+- 错误重试
+- loading delay
+- SWR(stale-while-revalidate)
+- 缓存
 
 ---
+
 layout: image-left
 image: https://source.unsplash.com/collection/94734566/1920x1080
+
 ---
 
-# React函数式组件的原则
+# React 函数式组件的原则
 
-1. React中的函数式编程，就是一个提取副作用的过程。尽可能的不要在业务代码中使用useEffect，减少业务代码里面的副作用，如果有，最好提出去，封装成自定义hooks，保证业务代码的纯函数特性
-2. 尽可能的少用props传递数据，而是利用hooks热插拔的特性注入数据
+1. React 中的函数式编程，就是一个提取副作用的过程。尽可能的不要在业务代码中使用 useEffect，减少业务代码里面的副作用，如果有，最好提出去，封装成自定义 hooks，保证业务代码的纯函数特性
+2. 尽可能的少用 props 传递数据，而是利用 hooks 热插拔的特性注入数据
 3. 尽可能的少定义内部状态，最好是一个状态定义整个组件的表现。多个状态容易出现冲突的问题。
 
 ---
+
 layout: image-left
 image: https://source.unsplash.com/collection/94734566/1920x1080
+
 ---
 
 # One More Thing...
 
 <div class="text-2xl mt-15 text-red-500">
 
-localstorage的监听回调不能在当前页面触发...
+localstorage 的监听回调不能在当前页面触发...
 
 </div>
 
 <div class="mt-12">
 
-我看过的所有的第三方hooks库都没有利用addEventListener(\'storage\')来监听回调。。。也许是因为没有使用场景。
+我看过的所有的第三方 hooks 库都没有利用 addEventListener(\'storage\')来监听回调。。。也许是因为没有使用场景。
 
-所以前面提到的useLocalStorage只是假设，有可能不会在实际上使用。
+所以前面提到的 useLocalStorage 只是假设，有可能不会在实际上使用。
 
-当然，我个人觉得加上addEventListener(\'storage\')才是完成体useLocalStorage，错的是第三方库。。。  
+当然，我个人觉得加上 addEventListener(\'storage\')才是完成体 useLocalStorage，错的是第三方库。。。
 
 </div>
